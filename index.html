@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLASTIC MASTER | 플라스틱 원가 및 견적 산출기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700;800;900&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background-color: #f1f5f9; color: #1e293b; }
+        
+        .app-container { max-width: 1400px; margin: 0 auto; background: transparent; padding: 20px 30px; }
+        .box-panel { background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); padding: 24px; border: 1px solid #e2e8f0; }
+        
+        .title-bar { font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 16px; display: flex; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; }
+        .title-bar i { color: #0891b2; margin-right: 10px; font-size: 1.3rem; }
+
+        .input-group { margin-bottom: 16px; }
+        .input-label { display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 6px; }
+        .input-box { width: 100%; height: 42px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 12px; font-size: 0.95rem; font-weight: 600; color: #1e293b; outline: none; transition: border-color 0.2s; background: #f8fafc; }
+        .input-box:focus { border-color: #0891b2; background: #ffffff; box-shadow: 0 0 0 3px rgba(8,145,178,0.1); }
+        .input-addon { display: flex; align-items: center; }
+        .input-addon input { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: none; }
+        .input-addon span { display: inline-flex; items-center; justify-content: center; background: #e2e8f0; color: #64748b; font-weight: 700; font-size: 0.8rem; padding: 0 12px; border: 1px solid #cbd5e1; border-left: none; border-top-right-radius: 8px; border-bottom-right-radius: 8px; height: 42px; align-items: center; }
+
+        /* 결과 디스플레이 */
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #e2e8f0; }
+        .result-label { font-size: 0.9rem; font-weight: 700; color: #64748b; }
+        .result-value { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+        
+        .total-box { background: #ecfeff; border: 2px solid #a5f3fc; border-radius: 12px; padding: 20px; text-align: center; margin-top: 20px; }
+        .total-label { font-size: 1rem; font-weight: 800; color: #0e7490; margin-bottom: 8px; display: block; }
+        .total-price { font-size: 2.5rem; font-weight: 900; color: #164e63; letter-spacing: -0.05em; }
+
+        /* 아카이브 테이블 */
+        .archive-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .archive-table th { background: #f8fafc; color: #475569; font-size: 0.8rem; font-weight: 800; padding: 12px; text-align: center; border-bottom: 2px solid #cbd5e1; }
+        .archive-table td { padding: 12px; font-size: 0.85rem; text-align: center; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #334155; }
+        .archive-table tr:hover { background: #f1f5f9; }
+        .badge { font-size: 0.7rem; padding: 3px 6px; border-radius: 4px; font-weight: 800; }
+        .badge-resin { background: #e0f2fe; color: #0369a1; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container no-print pb-0 flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">PLASTIC <span class="text-cyan-600">MASTER</span></h1>
+            <p class="text-sm text-slate-500 mt-1 font-bold">정밀한 재료비/가공비 계산을 통한 플라스틱 부품 단가 및 견적 산출기</p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="clearInputs()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 px-4 py-2.5 rounded-lg font-bold shadow-sm transition-all text-sm">
+                <i class="fas fa-redo mr-1"></i> 폼 비우기
+            </button>
+            <button onclick="saveToArchive()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-md transition-all text-sm">
+                <i class="fas fa-save mr-1"></i> 현재 견적 저장
+            </button>
+            <button onclick="exportPDF()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-lg font-bold shadow-md transition-all text-sm">
+                <i class="fas fa-file-pdf mr-1"></i> 견적서 PDF 출력
+            </button>
+        </div>
+    </div>
+
+    <div class="app-container grid grid-cols-1 lg:grid-cols-12 gap-6" id="capture-area">
+        
+        <div class="lg:col-span-5 flex flex-col gap-6 no-print">
+            
+            <div class="box-panel border-t-4 border-t-cyan-500">
+                <div class="title-bar"><i class="fas fa-cubes"></i> 1. 원재료 (Resin) 스펙</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-group col-span-2">
+                        <label class="input-label">제품명 / 프로젝트명</label>
+                        <input type="text" id="i-name" class="input-box" placeholder="예: 화장품 용기 캡, 자동차 내장재 A">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">원재료 종류</label>
+                        <select id="i-resin" class="input-box">
+                            <option value="PP">PP (폴리프로필렌)</option>
+                            <option value="PE">PE (폴리에틸렌)</option>
+                            <option value="ABS">ABS</option>
+                            <option value="PET">PET</option>
+                            <option value="PC">PC (폴리카보네이트)</option>
+                            <option value="PVC">PVC</option>
+                            <option value="기타">기타 특수수지</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">수지 단가 (kg당)</label>
+                        <div class="input-addon">
+                            <input type="number" id="i-resin-price" class="input-box" placeholder="예: 1800" oninput="calculate()">
+                            <span>원/kg</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">제품 1개 중량</label>
+                        <div class="input-addon">
+                            <input type="number" id="i-weight" class="input-box" placeholder="예: 45.5" oninput="calculate()">
+                            <span>g</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">로스율 (런너/불량 등)</label>
+                        <div class="input-addon">
+                            <input type="number" id="i-loss" class="input-box" value="3" oninput="calculate()">
+                            <span>%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box-panel border-t-4 border-t-blue-500">
+                <div class="title-bar"><i class="fas fa-cogs"></i> 2. 사출/생산 공정 스펙</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-group col-span-2">
+                        <label class="input-label">기계 임가공비 (시간당 가동비)</label>
+                        <div class="input-addon">
+                            <input type="number" id="i-machine-rate" class="input-box" placeholder="예: 30000" oninput="calculate()">
+                            <span>원/시간</span>
+                        </div>
+                        <p class="text-[0.7rem] text-slate-400 mt-1">※ 기계 톤수(Ton)에 따른 시간당 청구 단가</p>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">사이클 타임</label>
+                        <div class="input-addon">
+                            <input type="number" id="i-cycle" class="input-box" placeholder="예: 15" oninput="calculate()">
+                            <span>초(sec)</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label text-blue-600">캐비티 (Cavity) 수</label>
+                        <div class="input-addon">
+                            <input type="number" id="i-cavity" class="input-box border-blue-300" value="1" oninput="calculate()">
+                            <span>개/Shot</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box-panel border-t-4 border-t-emerald-500">
+                <div class="title-bar"><i class="fas fa-box-open"></i> 3. 후가공 & 마진 설정</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-group">
+                        <label class="input-label">후가공/포장비 (1개당)</label>
+                        <div class="input-addon">
+                            <input type="number" id="i-extra" class="input-box" value="0" oninput="calculate()">
+                            <span>원</span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label text-emerald-600">목표 마진율</label>
+                        <div class="input-addon">
+                            <input type="number" id="i-margin" class="input-box border-emerald-300" value="20" oninput="calculate()">
+                            <span>%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="lg:col-span-7 flex flex-col gap-6">
+            <div class="box-panel h-full flex flex-col" id="quote-document">
+                
+                <div class="flex justify-between items-center mb-6 border-b-2 border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-800">제품 원가 및 견적 분석서</h2>
+                        <p class="text-sm font-bold text-slate-500 mt-1" id="out-date">2026-03-01</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-cyan-700" id="out-name">제품명을 입력하세요</div>
+                        <div class="text-sm font-bold text-slate-500 mt-1">PLASTIC MASTER AI SYSTEM</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-8 flex-1">
+                    <div class="flex flex-col justify-center">
+                        
+                        <div class="result-row">
+                            <span class="result-label"><i class="fas fa-tint mr-1 text-slate-400"></i> 순수 재료비</span>
+                            <span class="result-value" id="out-mat">0 원</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label"><i class="fas fa-cog mr-1 text-slate-400"></i> 사출/가공비</span>
+                            <span class="result-value" id="out-proc">0 원</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label"><i class="fas fa-box mr-1 text-slate-400"></i> 부자재/포장비</span>
+                            <span class="result-value" id="out-ext">0 원</span>
+                        </div>
+                        <div class="result-row bg-slate-50 mt-2 px-3 rounded">
+                            <span class="result-label text-slate-800">1개당 총 제조원가 (Cost)</span>
+                            <span class="result-value text-slate-800" id="out-cost">0 원</span>
+                        </div>
+                        
+                        <div class="result-row border-none mt-2">
+                            <span class="result-label text-emerald-600"><i class="fas fa-chart-line mr-1"></i> 설정 마진 이익</span>
+                            <span class="result-value text-emerald-600" id="out-profit">0 원</span>
+                        </div>
+
+                        <div class="total-box">
+                            <span class="total-label">고객 제출용 최종 견적 단가 (1EA)</span>
+                            <div class="total-price" id="out-quote">0 원</div>
+                        </div>
+
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center relative">
+                        <div class="w-full h-[250px] relative">
+                            <canvas id="costChart"></canvas>
+                        </div>
+                        <div class="text-center mt-4 text-sm font-bold text-slate-500 bg-slate-50 px-4 py-2 rounded-lg w-full">
+                            <i class="fas fa-info-circle mr-1 text-cyan-600"></i> 원가 구성비 분석
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="app-container mt-4 no-print">
+        <div class="box-panel">
+            <div class="section-title"><i class="fas fa-folder-open text-slate-500"></i> 견적 저장 내역 (Archive)</div>
+            <div class="overflow-x-auto">
+                <table class="archive-table">
+                    <thead>
+                        <tr>
+                            <th>저장 일시</th>
+                            <th>제품명</th>
+                            <th>수지(단가)</th>
+                            <th>중량</th>
+                            <th>사이클/캐비티</th>
+                            <th class="text-red-500">총 원가</th>
+                            <th class="text-emerald-600">최종 견적가</th>
+                            <th>마진율</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let myChart = null;
+
+        // 오늘 날짜 세팅
+        const today = new Date();
+        document.getElementById('out-date').innerText = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+        // 🌟 1. 핵심 원가 계산 로직
+        function calculate() {
+            // 원재료
+            const name = document.getElementById('i-name').value || "미지정 제품";
+            const resinPrice = parseFloat(document.getElementById('i-resin-price').value) || 0; // kg당
+            const weight = parseFloat(document.getElementById('i-weight').value) || 0; // g
+            const loss = parseFloat(document.getElementById('i-loss').value) || 0; // %
+
+            // 공정
+            const machineRate = parseFloat(document.getElementById('i-machine-rate').value) || 0; // 시간당
+            const cycle = parseFloat(document.getElementById('i-cycle').value) || 0; // 초
+            const cavity = parseFloat(document.getElementById('i-cavity').value) || 1; // 개수
+
+            // 기타/마진
+            const extra = parseFloat(document.getElementById('i-extra').value) || 0;
+            const margin = parseFloat(document.getElementById('i-margin').value) || 0;
+
+            // ---- 수식 계산 ----
+            // 1. 재료비 = (kg단가 / 1000) * 제품중량 * (1 + 로스율)
+            const matCost = (resinPrice / 1000) * weight * (1 + (loss / 100));
+
+            // 2. 가공비 = ((시간당가동비 / 3600) * 사이클타임) / 캐비티수
+            const procCost = ((machineRate / 3600) * cycle) / cavity;
+
+            // 3. 총 제조 원가 = 재료비 + 가공비 + 후가공비
+            const totalCost = matCost + procCost + extra;
+
+            // 4. 최종 견적가 = 총원가 / (1 - 마진율) -> 통상적인 판매가(Markup) 계산 방식
+            // 만약 단순 이익률 덧붙이기라면 totalCost * (1 + (margin/100))
+            const quotePrice = totalCost / (1 - (margin / 100));
+            
+            // 5. 마진 금액 = 견적가 - 원가
+            const profit = quotePrice - totalCost;
+
+            // ---- 화면 출력 (소수점 1자리까지 표시) ----
+            document.getElementById('out-name').innerText = name;
+            document.getElementById('out-mat').innerText = matCost.toLocaleString(undefined, {minimumFractionDigits:1, maximumFractionDigits:1}) + ' 원';
+            document.getElementById('out-proc').innerText = procCost.toLocaleString(undefined, {minimumFractionDigits:1, maximumFractionDigits:1}) + ' 원';
+            document.getElementById('out-ext').innerText = extra.toLocaleString(undefined, {minimumFractionDigits:1, maximumFractionDigits:1}) + ' 원';
+            document.getElementById('out-cost').innerText = totalCost.toLocaleString(undefined, {minimumFractionDigits:1, maximumFractionDigits:1}) + ' 원';
+            document.getElementById('out-profit').innerText = profit.toLocaleString(undefined, {minimumFractionDigits:1, maximumFractionDigits:1}) + ' 원';
+            
+            // 최종 견적은 반올림 처리하여 깔끔하게
+            document.getElementById('out-quote').innerText = Math.round(quotePrice).toLocaleString() + ' 원';
+
+            // 차트 업데이트
+            renderChart(matCost, procCost, extra, profit);
+        }
+
+        // 🌟 2. 시각화 도넛 차트
+        function renderChart(mat, proc, ext, profit) {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            
+            if(myChart) myChart.destroy();
+
+            // 모두 0이면 빈 차트
+            if(mat === 0 && proc === 0 && ext === 0 && profit === 0) return;
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['재료비', '사출가공비', '부자재/포장', '목표 이익(마진)'],
+                    datasets: [{
+                        data: [mat, proc, ext, profit],
+                        backgroundColor: [
+                            'rgba(14, 165, 233, 0.9)', // 찐한 청록 (재료)
+                            'rgba(56, 189, 248, 0.8)', // 밝은 파랑 (가공)
+                            'rgba(148, 163, 184, 0.6)', // 회색 (부자재)
+                            'rgba(16, 185, 129, 0.9)'  // 초록 (마진)
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%', // 도넛 두께
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: {size: 11, family: 'Pretendard'} } }
+                    }
+                }
+            });
+        }
+
+        // 🌟 3. 데이터 저장 및 관리 로직
+        function getInputs() {
+            return {
+                name: document.getElementById('i-name').value || "미지정 제품",
+                resin: document.getElementById('i-resin').value,
+                rPrice: document.getElementById('i-resin-price').value,
+                weight: document.getElementById('i-weight').value,
+                loss: document.getElementById('i-loss').value,
+                mRate: document.getElementById('i-machine-rate').value,
+                cycle: document.getElementById('i-cycle').value,
+                cavity: document.getElementById('i-cavity').value,
+                extra: document.getElementById('i-extra').value,
+                margin: document.getElementById('i-margin').value,
+                // 계산된 결과값 (문자열 파싱)
+                cost: document.getElementById('out-cost').innerText,
+                quote: document.getElementById('out-quote').innerText
+            };
+        }
+
+        function saveToArchive() {
+            const data = getInputs();
+            if(!data.rPrice || !data.weight || !data.cycle) return alert("원재료비, 중량, 사이클타임 등 필수 값을 입력해주세요.");
+
+            let history = JSON.parse(localStorage.getItem('plastic_master_history') || "[]");
+            history.unshift({ id: Date.now(), date: new Date().toLocaleString('ko-KR'), ...data });
+            localStorage.setItem('plastic_master_history', JSON.stringify(history));
+            
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const tbody = document.getElementById('history-body');
+            const history = JSON.parse(localStorage.getItem('plastic_master_history') || "[]");
+            
+            tbody.innerHTML = '';
+            if(history.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-slate-400 py-6">저장된 견적 내역이 없습니다.</td></tr>';
+                return;
+            }
+
+            history.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-xs text-slate-400">${item.date}</td>
+                        <td class="font-bold text-slate-800">${item.name}</td>
+                        <td><span class="badge badge-resin">${item.resin}</span><br><span class="text-xs text-slate-500">${item.rPrice}원/kg</span></td>
+                        <td>${item.weight}g</td>
+                        <td class="text-xs text-slate-500">${item.cycle}초 / ${item.cavity}캐비티</td>
+                        <td class="font-bold text-red-500">${item.cost}</td>
+                        <td class="font-black text-emerald-600 text-lg">${item.quote}</td>
+                        <td><span class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded font-bold">${item.margin}%</span></td>
+                        <td>
+                            <button onclick="deleteArchive(${item.id})" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteArchive(id) {
+            if(confirm("이 견적 기록을 삭제하시겠습니까?")) {
+                let history = JSON.parse(localStorage.getItem('plastic_master_history') || "[]");
+                history = history.filter(h => h.id !== id);
+                localStorage.setItem('plastic_master_history', JSON.stringify(history));
+                renderHistory();
+            }
+        }
+
+        function clearInputs() {
+            const inputs = ['i-name', 'i-resin-price', 'i-weight', 'i-machine-rate', 'i-cycle'];
+            inputs.forEach(id => document.getElementById(id).value = '');
+            // 기본값 유지 세팅
+            document.getElementById('i-loss').value = '3';
+            document.getElementById('i-cavity').value = '1';
+            document.getElementById('i-extra').value = '0';
+            document.getElementById('i-margin').value = '20';
+            calculate(); // 결과 초기화
+        }
+
+        // PDF 출력 (오른쪽 보고서 부분만 깔끔하게 추출)
+        function exportPDF() {
+            const element = document.getElementById('quote-document');
+            
+            // PDF를 굽기 위해 임시로 디자인을 다듬음 (테두리, 섀도우 제거)
+            element.style.boxShadow = 'none';
+            element.style.border = 'none';
+
+            const opt = { 
+                margin: 15, 
+                filename: `플라스틱_견적서_${document.getElementById('i-name').value || '무제'}.pdf`, 
+                image: { type: 'jpeg', quality: 1 }, 
+                html2canvas: { scale: 2, useCORS: true }, 
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } 
+            };
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                // 원상복구
+                element.style.boxShadow = '';
+                element.style.border = '';
+            });
+        }
+
+        // 초기 실행
+        window.onload = () => {
+            calculate();
+            renderHistory();
+            // 모든 인풋에 자동 계산 이벤트 연결 보장
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', calculate);
+            });
+            document.getElementById('i-resin').addEventListener('change', calculate);
+        };
+    </script>
+</body>
+</html>
