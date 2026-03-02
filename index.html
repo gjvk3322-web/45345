@@ -9,27 +9,36 @@
         body { font-family: 'Pretendard', 'Malgun Gothic', sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
         .header { text-align: center; margin-bottom: 30px; }
         .header h1 { color: #2c3e50; margin-bottom: 5px; }
-        .dashboard { display: flex; gap: 20px; max-width: 1300px; margin: 0 auto; align-items: flex-start; }
+        .dashboard { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; align-items: flex-start; }
         
         /* 좌측: KPI 및 고려사항 */
-        .sidebar { flex: 1; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 20px; }
+        .sidebar { flex: 1; display: flex; flex-direction: column; gap: 20px; position: sticky; top: 20px; min-width: 250px; }
         .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .card h2 { font-size: 1.1rem; margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; color: #34495e; }
         .progress-bar { width: 100%; background-color: #e2e8f0; border-radius: 8px; overflow: hidden; margin-top: 10px; height: 15px; }
         .progress { height: 100%; background-color: #3498db; width: 0%; transition: width 0.4s ease; }
         textarea.risk-note { width: 100%; height: 120px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; box-sizing: border-box; resize: none; font-family: inherit; }
         
-        /* 우측: 메인 컨텐츠 (로드맵 + 칸반) */
-        .content-area { flex: 2.5; display: flex; flex-direction: column; gap: 20px; }
+        /* 우측: 메인 컨텐츠 영역 */
+        .content-area { flex: 3; display: flex; flex-direction: column; gap: 20px; width: 100%; overflow: hidden; }
         
-        /* 우측 상단: 로드맵 (캘린더) */
-        .roadmap { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        /* 우측 상단: 로드맵 (가로 스크롤 달력) */
+        .roadmap { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box; }
         .roadmap h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 15px; color: #34495e; display: flex; align-items: center; gap: 8px; }
-        .calendar-grid { display: flex; gap: 10px; }
-        .day-col { flex: 1; background: #f8fafc; border-radius: 8px; padding: 10px; min-height: 80px; border: 1px solid #e2e8f0; }
-        .day-title { text-align: center; font-size: 0.85rem; font-weight: bold; color: #64748b; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #e2e8f0; }
+        
+        /* 14일치 달력을 위한 스크롤 영역 */
+        .calendar-wrapper { width: 100%; overflow-x: auto; padding-bottom: 10px; }
+        /* 스크롤바 예쁘게 꾸미기 */
+        .calendar-wrapper::-webkit-scrollbar { height: 8px; }
+        .calendar-wrapper::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .calendar-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .calendar-wrapper::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .calendar-grid { display: flex; gap: 10px; min-width: 1400px; /* 14일이 들어갈 충분한 넓이 */ }
+        .day-col { flex: 1; background: #f8fafc; border-radius: 8px; padding: 10px; min-height: 90px; border: 1px solid #e2e8f0; min-width: 90px; }
+        .day-title { text-align: center; font-size: 0.8rem; font-weight: bold; color: #64748b; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #e2e8f0; }
         .day-title.today { color: #3498db; }
-        .mini-task { color: white; font-size: 0.75rem; padding: 5px; border-radius: 4px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+        .mini-task { color: white; font-size: 0.75rem; padding: 4px; border-radius: 4px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
         
         /* 우측 하단: 칸반보드 */
         .kanban { display: flex; gap: 15px; }
@@ -46,13 +55,16 @@
 
         /* 모달 (상세 계획 창) 스타일 */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 450px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-content h3 { margin-top: 0; color: #2c3e50; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 0.85rem; color: #64748b; margin-bottom: 5px; font-weight: bold; }
+        
+        .date-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .form-group { flex: 1; }
+        .form-group label { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 5px; font-weight: bold; }
         .form-group input[type="date"] { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
-        .modal-textarea { width: 100%; height: 120px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; box-sizing: border-box; resize: none; font-family: inherit; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+        
+        .modal-textarea { width: 100%; height: 120px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; box-sizing: border-box; resize: none; font-family: inherit; margin-bottom: 10px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
         .btn-close { background: #94a3b8; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
         .btn-save { background: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .btn-save:hover { background: #27ae60; }
@@ -62,7 +74,7 @@
 
     <div class="header">
         <h1>🚀 프로젝트 통합 관리 대시보드</h1>
-        <p>일정은 한눈에, 업무는 깔끔하게, 상세한 계획은 꼼꼼하게.</p>
+        <p>2주간의 흐름을 한눈에! 기간을 설정해 업무를 빈틈없이 관리하세요.</p>
     </div>
 
     <div class="dashboard">
@@ -85,9 +97,11 @@
         <div class="content-area">
             
             <div class="roadmap">
-                <h2>🗓️ 주간 스프린트 로드맵 <span style="font-size: 0.8rem; font-weight: normal; color: #94a3b8; margin-left: 10px;">(업무 클릭 후 마감일을 설정하면 이곳에 표시됩니다)</span></h2>
-                <div class="calendar-grid" id="sprint-calendar">
-                    </div>
+                <h2>🗓️ 2주 스프린트 로드맵 <span style="font-size: 0.8rem; font-weight: normal; color: #94a3b8; margin-left: 10px;">(마우스로 가로 스크롤이 가능합니다)</span></h2>
+                <div class="calendar-wrapper">
+                    <div class="calendar-grid" id="sprint-calendar">
+                        </div>
+                </div>
             </div>
 
             <div class="kanban">
@@ -114,12 +128,18 @@
         <div class="modal-content">
             <h3 id="modal-title">업무 제목</h3>
             
-            <div class="form-group">
-                <label for="modal-date">📅 목표 마감일 (로드맵에 표시됨)</label>
-                <input type="date" id="modal-date">
+            <div class="date-group">
+                <div class="form-group">
+                    <label for="modal-start-date">🟢 시작일</label>
+                    <input type="date" id="modal-start-date">
+                </div>
+                <div class="form-group">
+                    <label for="modal-end-date">🔴 종료일</label>
+                    <input type="date" id="modal-end-date">
+                </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom: 0;">
                 <label for="modal-detail">📝 상세 진행 계획</label>
                 <textarea class="modal-textarea" id="modal-detail" placeholder="이 업무를 어떻게 진행할지 구체적인 계획을 메모하세요..."></textarea>
             </div>
@@ -134,29 +154,29 @@
     <script>
         let currentActiveTask = null; 
 
-        // 1. 달력 및 로드맵 그리기
+        // 1. 14일치 달력 및 로드맵 그리기
         function updateCalendar() {
             const calendarEl = document.getElementById('sprint-calendar');
-            calendarEl.innerHTML = ''; // 기존 내용 지우기
+            calendarEl.innerHTML = ''; 
             
             const today = new Date();
             const days = ['일', '월', '화', '수', '목', '금', '토'];
 
-            // 오늘부터 7일간의 칸 생성
-            for(let i=0; i<7; i++) {
+            // 14일간의 칸 생성
+            for(let i=0; i<14; i++) {
                 const targetDate = new Date(today);
                 targetDate.setDate(today.getDate() + i);
                 
-                // 한국 시간 기준 YYYY-MM-DD 형식 맞추기
+                // YYYY-MM-DD 포맷
                 const year = targetDate.getFullYear();
                 const month = String(targetDate.getMonth() + 1).padStart(2, '0');
                 const date = String(targetDate.getDate()).padStart(2, '0');
-                const dateString = `${year}-${month}-${date}`;
+                const dateString = `${year}-${month}-${date}`; // 비교 및 ID용
                 
                 const displayDate = `${targetDate.getMonth() + 1}/${targetDate.getDate()}`;
                 const dayName = days[targetDate.getDay()];
                 
-                let dayLabel = i === 0 ? "오늘" : i === 1 ? "내일" : `${dayName}요일`;
+                let dayLabel = i === 0 ? "오늘" : i === 1 ? "내일" : `${dayName}`;
                 let titleClass = i === 0 ? "day-title today" : "day-title";
                 
                 const col = document.createElement('div');
@@ -168,32 +188,58 @@
                 calendarEl.appendChild(col);
             }
 
-            // 모든 업무(task)를 찾아서 날짜가 맞으면 달력에 미니 태그로 추가
+            // 모든 업무(task) 확인 후 설정된 '기간'에 맞게 표시
             const allTasks = document.querySelectorAll('.task');
             allTasks.forEach(task => {
-                const taskDate = task.getAttribute('data-date');
+                const startDateStr = task.getAttribute('data-start-date');
+                const endDateStr = task.getAttribute('data-end-date');
                 const taskTitle = task.querySelector('.task-title').innerText;
-                const parentId = task.parentElement.id; // 현재 칸반 위치
+                const parentId = task.parentElement.id; 
                 
-                if(taskDate) {
-                    const targetDiv = document.getElementById(`cal-${taskDate}`);
+                if(startDateStr && endDateStr) {
+                    // 시작일과 종료일이 모두 있다면, 해당 기간 내에 들어가는 14일 칸을 찾아서 그린다.
+                    for(let i=0; i<14; i++) {
+                        const targetDate = new Date(today);
+                        targetDate.setDate(today.getDate() + i);
+                        
+                        const year = targetDate.getFullYear();
+                        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+                        const date = String(targetDate.getDate()).padStart(2, '0');
+                        const currentDateStr = `${year}-${month}-${date}`;
+                        
+                        // 문자열 비교 (YYYY-MM-DD 형식이라 크기 비교가 완벽히 동작합니다)
+                        if(currentDateStr >= startDateStr && currentDateStr <= endDateStr) {
+                            const targetDiv = document.getElementById(`cal-${currentDateStr}`);
+                            if(targetDiv) {
+                                const mini = document.createElement('div');
+                                mini.className = 'mini-task';
+                                mini.innerText = taskTitle;
+                                
+                                if(parentId === 'todo-tasks') mini.style.background = '#3498db';      
+                                else if(parentId === 'inprog-tasks') mini.style.background = '#f39c12'; 
+                                else if(parentId === 'done-tasks') mini.style.background = '#2ecc71';   
+                                
+                                targetDiv.appendChild(mini);
+                            }
+                        }
+                    }
+                } else if(startDateStr && !endDateStr) {
+                    // 시작일만 적었을 경우 하루짜리로 간주
+                    const targetDiv = document.getElementById(`cal-${startDateStr}`);
                     if(targetDiv) {
                         const mini = document.createElement('div');
                         mini.className = 'mini-task';
                         mini.innerText = taskTitle;
-                        
-                        // 칸반 상태에 따라 로드맵 미니 태그 색상 변경
-                        if(parentId === 'todo-tasks') mini.style.background = '#3498db';      // 할 일 (파랑)
-                        else if(parentId === 'inprog-tasks') mini.style.background = '#f39c12'; // 진행 중 (주황)
-                        else if(parentId === 'done-tasks') mini.style.background = '#2ecc71';   // 완료 (초록)
-                        
+                        if(parentId === 'todo-tasks') mini.style.background = '#3498db';      
+                        else if(parentId === 'inprog-tasks') mini.style.background = '#f39c12'; 
+                        else if(parentId === 'done-tasks') mini.style.background = '#2ecc71';   
                         targetDiv.appendChild(mini);
                     }
                 }
             });
         }
 
-        // 2. KPI 자동 계산 기능
+        // 2. KPI 갱신
         function updateKPI() {
             const todoCount = document.getElementById('todo-tasks').children.length;
             const inprogCount = document.getElementById('inprog-tasks').children.length;
@@ -207,7 +253,7 @@
             document.getElementById('kpi-text').innerText = percentage + '%';
         }
 
-        // 3. 업무 추가 기능
+        // 3. 업무 추가
         function addTask() {
             const taskText = prompt("추가할 프로젝트나 업무의 이름을 입력하세요:");
             if (taskText) {
@@ -215,7 +261,8 @@
                 taskDiv.className = "task";
                 taskDiv.setAttribute("onclick", "openModal(this)"); 
                 taskDiv.setAttribute("data-detail", ""); 
-                taskDiv.setAttribute("data-date", ""); // 날짜 속성 추가
+                taskDiv.setAttribute("data-start-date", ""); // 시작일
+                taskDiv.setAttribute("data-end-date", "");   // 종료일
 
                 taskDiv.innerHTML = `<span class="task-title">${taskText}</span> <button class="task-btn" onclick="moveTask(event, this, 'inprog-tasks')">→</button>`;
                 document.getElementById('todo-tasks').appendChild(taskDiv);
@@ -224,7 +271,7 @@
             }
         }
 
-        // 4. 업무 이동 및 삭제 기능
+        // 4. 업무 이동 및 삭제
         function moveTask(event, button, targetColumnId) {
             event.stopPropagation(); 
             const task = button.parentElement;
@@ -242,7 +289,7 @@
             
             document.getElementById(targetColumnId).appendChild(task);
             updateKPI(); 
-            updateCalendar(); // 상태가 변했으므로 로드맵 색상도 업데이트
+            updateCalendar(); 
         }
 
         function deleteTask(event, button) {
@@ -250,20 +297,22 @@
             if(confirm("이 업무를 완전히 삭제하시겠습니까?")) {
                 button.parentElement.remove();
                 updateKPI(); 
-                updateCalendar(); // 삭제되었으므로 로드맵에서도 제거
+                updateCalendar(); 
             }
         }
 
-        // 5. 상세 계획 모달 기능
+        // 5. 상세 계획 모달 열기/닫기/저장
         function openModal(taskElement) {
             currentActiveTask = taskElement;
             const title = taskElement.querySelector('.task-title').innerText;
             const detail = taskElement.getAttribute('data-detail');
-            const date = taskElement.getAttribute('data-date');
+            const startDate = taskElement.getAttribute('data-start-date');
+            const endDate = taskElement.getAttribute('data-end-date');
             
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-detail').value = detail;
-            document.getElementById('modal-date').value = date;
+            document.getElementById('modal-start-date').value = startDate;
+            document.getElementById('modal-end-date').value = endDate;
             
             document.getElementById('task-modal').style.display = 'flex';
         }
@@ -276,13 +325,21 @@
         function saveTaskDetail() {
             if (currentActiveTask) {
                 const newDetail = document.getElementById('modal-detail').value;
-                const newDate = document.getElementById('modal-date').value;
+                const newStartDate = document.getElementById('modal-start-date').value;
+                const newEndDate = document.getElementById('modal-end-date').value;
                 
+                // 종료일이 시작일보다 빠르면 경고
+                if(newStartDate && newEndDate && newEndDate < newStartDate) {
+                    alert("종료일이 시작일보다 빠를 수 없습니다!");
+                    return; // 저장 막기
+                }
+
                 currentActiveTask.setAttribute('data-detail', newDetail); 
-                currentActiveTask.setAttribute('data-date', newDate); 
+                currentActiveTask.setAttribute('data-start-date', newStartDate); 
+                currentActiveTask.setAttribute('data-end-date', newEndDate); 
             }
             closeModal();
-            updateCalendar(); // 날짜가 바뀌었을 수 있으므로 달력 업데이트
+            updateCalendar(); 
         }
 
         // 프로그램 시작 시 초기화
