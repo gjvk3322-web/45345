@@ -5,220 +5,199 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>돌봄매트 - 프로젝트 관리 대시보드</title>
     <style>
-        /* 깔끔하고 부드러운 느낌의 디자인 (돌봄매트 스타일) */
-        body {
-            font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-        .dashboard {
-            display: flex;
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        /* 깔끔하고 부드러운 느낌의 디자인 */
+        body { font-family: 'Pretendard', 'Malgun Gothic', sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #2c3e50; margin-bottom: 5px; }
+        .dashboard { display: flex; gap: 20px; max-width: 1200px; margin: 0 auto; }
+        
         /* 좌측: KPI 및 고려사항 */
-        .sidebar {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        .card h2 {
-            font-size: 1.2rem;
-            margin-top: 0;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 10px;
-            color: #34495e;
-        }
-        .kpi-item {
-            margin-bottom: 15px;
-        }
-        .progress-bar {
-            width: 100%;
-            background-color: #e2e8f0;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-top: 5px;
-        }
-        .progress {
-            height: 10px;
-            background-color: #3498db;
-            width: 65%; /* 예시 달성률 */
-        }
-        textarea {
-            width: 100%;
-            height: 100px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 10px;
-            box-sizing: border-box;
-            resize: none;
-            font-family: inherit;
-        }
+        .sidebar { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card h2 { font-size: 1.2rem; margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; color: #34495e; }
+        .progress-bar { width: 100%; background-color: #e2e8f0; border-radius: 8px; overflow: hidden; margin-top: 10px; height: 15px; }
+        .progress { height: 100%; background-color: #3498db; width: 0%; transition: width 0.4s ease; }
+        textarea.risk-note { width: 100%; height: 120px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; box-sizing: border-box; resize: none; font-family: inherit; }
+        
         /* 우측: 칸반보드 */
-        .kanban {
-            flex: 2;
-            display: flex;
-            gap: 15px;
-        }
-        .column {
-            flex: 1;
-            background: #eef2f5;
-            border-radius: 12px;
-            padding: 15px;
-        }
-        .column h3 {
-            text-align: center;
-            margin-top: 0;
-            color: #475569;
-        }
-        .task {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .task:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .task-btn {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .task-btn:hover {
-            color: #3498db;
-        }
-        .add-task {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            background: #3498db;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .add-task:hover {
-            background: #2980b9;
-        }
+        .kanban { flex: 2; display: flex; gap: 15px; }
+        .column { flex: 1; background: #eef2f5; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; }
+        .column h3 { text-align: center; margin-top: 0; color: #475569; }
+        .task-list { flex-grow: 1; min-height: 50px; }
+        .task { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.1s; border-left: 4px solid #3498db; }
+        .task:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .task-title { flex-grow: 1; pointer-events: none; /* 클릭 방해 방지 */ }
+        .task-btn { background: #f1f5f9; border: none; color: #64748b; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 5px 10px; }
+        .task-btn:hover { color: white; background: #3498db; }
+        .add-task { width: 100%; padding: 10px; border: none; border-radius: 8px; background: #3498db; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .add-task:hover { background: #2980b9; }
+
+        /* 모달 (상세 계획 창) 스타일 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-content h3 { margin-top: 0; color: #2c3e50; }
+        .modal-textarea { width: 100%; height: 150px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; box-sizing: border-box; resize: none; font-family: inherit; margin-bottom: 15px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-close { background: #94a3b8; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+        .btn-save { background: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-save:hover { background: #27ae60; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>🚀 프로젝트 통합 관리 대시보드</h1>
-        <p>복잡한 업무를 깔끔하게, 돌봄매트와 함께하세요.</p>
+        <p>복잡한 업무를 깔끔하게, 상세한 계획은 꼼꼼하게.</p>
     </div>
 
     <div class="dashboard">
         <div class="sidebar">
             <div class="card">
-                <h2>🎯 목표 및 KPI</h2>
-                <div class="kpi-item">
-                    <span><strong>프로젝트 A:</strong> 알파 버전 출시 (진척도 65%)</span>
-                    <div class="progress-bar"><div class="progress" style="width: 65%;"></div></div>
+                <h2>🎯 전체 프로젝트 달성률</h2>
+                <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 5px;">칸반보드의 '완료'된 업무 비율을 실시간으로 보여줍니다.</p>
+                <div style="display: flex; justify-content: space-between; font-weight: bold; color: #2c3e50;">
+                    <span>진척도</span>
+                    <span id="kpi-text">0%</span>
                 </div>
-                <div class="kpi-item">
-                    <span><strong>프로젝트 B:</strong> 사용자 피드백 100건 수집 (진척도 30%)</span>
-                    <div class="progress-bar"><div class="progress" style="width: 30%; background-color: #2ecc71;"></div></div>
-                </div>
+                <div class="progress-bar"><div class="progress" id="kpi-bar"></div></div>
             </div>
 
             <div class="card">
                 <h2>⚠️ 주요 고려사항 (Risk & Notes)</h2>
-                <p style="font-size: 0.9rem; color: #64748b; margin-top: 0;">프로젝트 간 리소스 충돌 여부를 항상 확인하세요.</p>
-                <textarea placeholder="여기에 중요하게 기억해야 할 사항이나 리스크를 메모하세요..."></textarea>
+                <textarea class="risk-note" placeholder="여기에 중요하게 기억해야 할 사항이나 리스크를 메모하세요..."></textarea>
             </div>
         </div>
 
         <div class="kanban">
             <div class="column" id="todo-col">
-                <h3>📌 할 일 (To-Do)</h3>
-                <div id="todo-tasks">
-                    <div class="task">기획안 초안 작성 <button class="task-btn" onclick="moveTask(this, 'inprog-tasks')">→</button></div>
-                </div>
-                <button class="add-task" onclick="addTask('todo-tasks')">+ 새로운 업무 추가</button>
+                <h3>📌 할 일</h3>
+                <div class="task-list" id="todo-tasks"></div>
+                <button class="add-task" onclick="addTask()">+ 새로운 업무 추가</button>
             </div>
 
             <div class="column" id="inprog-col">
-                <h3>⏳ 진행 중 (In Progress)</h3>
-                <div id="inprog-tasks">
-                    <div class="task">디자인 시안 검토 <button class="task-btn" onclick="moveTask(this, 'done-tasks')">→</button></div>
-                </div>
+                <h3>⏳ 진행 중</h3>
+                <div class="task-list" id="inprog-tasks"></div>
             </div>
 
             <div class="column" id="done-col">
-                <h3>✅ 완료 (Done)</h3>
-                <div id="done-tasks">
-                    <div class="task">킥오프 미팅 진행 <button class="task-btn" style="color:#e74c3c;" onclick="deleteTask(this)">X</button></div>
-                </div>
+                <h3>✅ 완료</h3>
+                <div class="task-list" id="done-tasks"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="task-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">업무 제목</h3>
+            <p style="font-size: 0.85rem; color: #64748b; margin-top:-10px;">이 업무를 어떻게 진행할지 구체적인 계획과 아이디어를 고민해 보세요.</p>
+            <textarea class="modal-textarea" id="modal-detail" placeholder="1. 자료 조사하기&#10;2. 담당자에게 메일 보내기&#10;3. 초안 작성 후 피드백 받기..."></textarea>
+            <div class="modal-actions">
+                <button class="btn-close" onclick="closeModal()">취소</button>
+                <button class="btn-save" onclick="saveTaskDetail()">저장</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 새로운 업무를 추가하는 기능
-        function addTask(columnId) {
-            const taskText = prompt("새로운 업무 내용을 입력하세요:");
+        let currentActiveTask = null; // 현재 클릭한 업무를 기억하는 변수
+
+        // 1. KPI 자동 계산 기능
+        function updateKPI() {
+            const todoCount = document.getElementById('todo-tasks').children.length;
+            const inprogCount = document.getElementById('inprog-tasks').children.length;
+            const doneCount = document.getElementById('done-tasks').children.length;
+            
+            const totalTasks = todoCount + inprogCount + doneCount;
+            let percentage = 0;
+            
+            if (totalTasks > 0) {
+                percentage = Math.round((doneCount / totalTasks) * 100);
+            }
+            
+            document.getElementById('kpi-bar').style.width = percentage + '%';
+            document.getElementById('kpi-text').innerText = percentage + '%';
+        }
+
+        // 2. 업무 추가 기능
+        function addTask() {
+            const taskText = prompt("추가할 프로젝트나 업무의 이름을 입력하세요:");
             if (taskText) {
-                const taskDiv = document.createElement("div");
-                taskDiv.className = "task";
-                // 화살표 버튼을 추가하여 다음 단계로 이동할 수 있게 함
-                taskDiv.innerHTML = `${taskText} <button class="task-btn" onclick="moveTask(this, 'inprog-tasks')">→</button>`;
-                document.getElementById(columnId).appendChild(taskDiv);
+                createTaskElement(taskText, 'todo-tasks');
+                updateKPI();
             }
         }
 
-        // 업무를 다음 단계로 이동하는 기능
-        function moveTask(button, targetColumnId) {
+        // 업무 카드를 생성하는 내부 함수
+        function createTaskElement(text, columnId) {
+            const taskDiv = document.createElement("div");
+            taskDiv.className = "task";
+            taskDiv.setAttribute("onclick", "openModal(this)"); // 클릭 시 모달 열기
+            taskDiv.setAttribute("data-detail", ""); // 상세 내용 저장소
+
+            taskDiv.innerHTML = `
+                <span class="task-title">${text}</span> 
+                <button class="task-btn" onclick="moveTask(event, this, 'inprog-tasks')">→</button>
+            `;
+            document.getElementById(columnId).appendChild(taskDiv);
+        }
+
+        // 3. 업무 이동 및 삭제 기능
+        function moveTask(event, button, targetColumnId) {
+            event.stopPropagation(); // 버튼 클릭 시 모달이 열리지 않도록 차단
+            
             const task = button.parentElement;
             
-            // 타겟 컬럼에 맞게 버튼 기능 변경
             if (targetColumnId === 'inprog-tasks') {
-                button.setAttribute("onclick", "moveTask(this, 'done-tasks')");
+                button.setAttribute("onclick", "moveTask(event, this, 'done-tasks')");
+                task.style.borderLeftColor = "#f39c12"; // 진행중 색상 변경
             } else if (targetColumnId === 'done-tasks') {
-                button.innerText = "X";
-                button.style.color = "#e74c3c";
-                button.setAttribute("onclick", "deleteTask(this)");
+                button.innerText = "삭제";
+                button.style.background = "#e74c3c";
+                button.style.color = "white";
+                task.style.borderLeftColor = "#2ecc71"; // 완료 색상 변경
+                button.setAttribute("onclick", "deleteTask(event, this)");
             }
             
             document.getElementById(targetColumnId).appendChild(task);
+            updateKPI(); // 이동할 때마다 KPI 갱신
         }
 
-        // 업무 삭제 기능
-        function deleteTask(button) {
+        function deleteTask(event, button) {
+            event.stopPropagation();
             if(confirm("이 업무를 완전히 삭제하시겠습니까?")) {
                 button.parentElement.remove();
+                updateKPI(); // 삭제할 때마다 KPI 갱신
             }
         }
+
+        // 4. 상세 계획 모달(팝업) 기능
+        function openModal(taskElement) {
+            currentActiveTask = taskElement;
+            const title = taskElement.querySelector('.task-title').innerText;
+            const detail = taskElement.getAttribute('data-detail');
+            
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-detail').value = detail;
+            
+            document.getElementById('task-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('task-modal').style.display = 'none';
+            currentActiveTask = null;
+        }
+
+        function saveTaskDetail() {
+            if (currentActiveTask) {
+                const newDetail = document.getElementById('modal-detail').value;
+                currentActiveTask.setAttribute('data-detail', newDetail); // 카드에 내용 숨겨서 저장
+            }
+            closeModal();
+        }
+
+        // 초기 화면 세팅 시 빈 상태에서 KPI 0% 맞추기
+        updateKPI();
     </script>
 </body>
 </html>
